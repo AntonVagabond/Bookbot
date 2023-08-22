@@ -15,7 +15,7 @@ def _get_part_text(text: str, start: int, size: int) -> tuple[str, int]:
     filter_two: list[str] = re.findall(r'(?s).+[.,!?:;]', filter_one)
 
     # убирает лишние \n
-    filter_three: str = re.sub(r'\n(?! {4})', '0', filter_two[0])
+    filter_three: str = re.sub(r'\n(?! {4})', ' ', filter_two[0])
     return filter_three, len(filter_three)
 
 
