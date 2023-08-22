@@ -1,0 +1,11 @@
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+venv/
+.env
+*.iml
+out
+gen
+__pycache__/
