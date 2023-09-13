@@ -2,11 +2,12 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from config_data.config import Config, load_config
+
+from config_data.config import BOT_TOKEN
 from handlers import other_handlers, user_handlers
 from keyboards.main_menu import set_main_menu
 
-# Инициализируем логгер
+# Initialize the logger
 logger = logging.getLogger(__name__)
 
 
@@ -20,11 +21,10 @@ async def main():
     logger.info('Starting bot')
 
     # Загружаем конфиг в переменную config
-    config: Config = load_config()
+    # config: Config = load_config()
 
     # Инициализируем бот и диспетчер
-    bot: Bot = Bot(token=config.tg_bot.token,
-                   parse_mode='HTML')
+    bot: Bot = Bot(token=BOT_TOKEN, parse_mode='HTML')
     dp: Dispatcher = Dispatcher()
 
     # Настраиваем главное меню бота
