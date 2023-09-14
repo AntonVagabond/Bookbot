@@ -1,6 +1,8 @@
 from aiogram import Router
 from aiogram.types import Message
 
+from lexicon.lexicon import LEXICON
+
 router: Router = Router()
 
 
@@ -8,4 +10,4 @@ router: Router = Router()
 # не предусмотренные логикой работы бота
 @router.message()
 async def send_echo(message: Message):
-    await message.answer(f'Незнаю, что вам ответить на этот текст!\n Могу его только повторить {message.text}')
+    await message.answer(LEXICON['miss_message'])
