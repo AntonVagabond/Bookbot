@@ -59,9 +59,11 @@ class UserInterface(BaseQueryMixin):
     def get_books(self, user_id: int) -> list:
         query: str = """
         SELECT name FROM books 
-        WHERE id = ANY(SELECT unnest(books)
+        WHERE id = ANY(
+        SELECT unnest(books)
         FROM users
-        WHERE user_id = %s);
+        WHERE user_id = %s
+        );
         """
         values: tuple = (user_id,)
 
@@ -138,7 +140,7 @@ class UserInterface(BaseQueryMixin):
         WHERE user_id = %s;
         """
         values: tuple = (user_id,)
-        result = self.get_row_by_query(query, values)
+        result: tuple = self.get_row_by_query(query, values)
         return result[0]
 
     def set_current_page(self, user_id: int, page: int) -> None:
@@ -150,15 +152,108 @@ class UserInterface(BaseQueryMixin):
         values: tuple = (page, user_id)
         self.execute_query_and_commit(query, values)
 
+    def get_book_marks(self, user_id: int) -> dict:
+        query: str = """
+        SELECT book_marks
+        FROM users
+        WHERE user_id = %s;
+        """
+        values: tuple = (user_id,)
+        result: tuple = self.get_row_by_query(query, values)
+        marks = result[0]
+        return marks if marks else {}
+
+    def _save_book_marks(self, user_id: int, book_marks: dict) -> None:
+        query: str = """
+        UPDATE users
+        SET book_marks = %s
+        WHERE user_id = %s;
+        """
+        book_marks_json: str = json.dumps(book_marks)
+        values: tuple = (book_marks_json, user_id)
+        self.execute_query_and_commit(query, values)
+
+    def add_book_mark(self, user_id: int, book_name: str, book_mark: str) -> None:
+        book_marks: dict[str, list] = self.get_book_marks(user_id)
+        if book_name in book_marks and book_mark in book_marks[book_name]:
+            return
+        book_marks.setdefault(book_name, []).append(book_mark)
+        self._save_book_marks(user_id, book_marks)
+
+    def remove_book_mark(self, user_id: int, book_name: str, book_mark: str) -> None:
+        book_marks: dict[str, list] = self.get_book_marks(user_id)
+        book_marks.get(book_name).remove(book_mark)
+        if not book_marks[book_name]:
+            del book_marks[book_name]
+        self._save_book_marks(user_id, book_marks)
+
+    def save_book(self, user_id: int, book_name: str, content: str) -> None:
+        query: str = """
+        INSERT INTO books
+        (name, content)
+        VALUES (%s, %s)
+        RETURNING id;
+        """
+        values: tuple = (book_name, content)
+
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, values)
+            book_id: int = cursor.fetchone()[0]
+            self.conn.commit()
+
+        query2: str = """
+        UPDATE users
+        SET books = array_append(books, %s)
+        WHERE user_id = %s;
+        """
+        values2: tuple = (book_id, user_id)
+
+        self.execute_query_and_commit(query2, values2)
 
 
+class BookInterface(BaseQueryMixin):
+
+    def get_page_content(self, book_name: str, page: int) -> str:
+        query: str = """
+        SELECT content->%s
+        FROM books
+        WHERE name = %s;
+        """
+        values: tuple = (book_name,)
+        result: tuple = self.get_row_by_query(query, values)
+        page_text: str = result[0]
+        return page_text
+
+    def get_length(self, book_name: str) -> int:
+        query: str = """
+        SELECT content
+        FROM books
+        WHERE name = %s;
+        """
+        values: tuple = (book_name,)
+        result: tuple = self.get_row_by_query(query, values)
+        content: str = result[0]
+        return len(content)
 
 
+class DataBase(BaseQueryMixin):
+    def __init__(self):
+        self.conn = psycopg2.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+        )
+        self.user_interface = UserInterface(self.conn)
+        self.book_interface = BookInterface(self.conn)
+
+    def get_table_data_as_dict(self, table_name: str) -> dict:
+        with self.conn.cursor() as cursor:
+            query: str = f"SELECT * FROM {table_name};"
+            cursor.execute(query)
+            results: list[tuple] = cursor.fetchall()
+            return dict(results)
 
 
-
-
-
-
-
-
+bot_database = DataBase()
