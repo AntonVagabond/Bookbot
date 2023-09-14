@@ -1,12 +1,20 @@
-from copy import deepcopy
-
 from aiogram import F, Router
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command, CommandStart, Text
 from aiogram.types import CallbackQuery, Message
-from database.database import user_dict_template, users_db
-from filters.filters import IsDelBookmarkCallbackData, IsDigitCallbackData
-from keyboards.bookmarks_kb import (create_bookmarks_keyboard,
-                                    create_edit_keyboard)
+
+from callback_factories.edit_items import EditItemsCallbackFactory
+from filters.filters import (
+    IsAddToBookMarksCallbackData,
+    IsBookCallbackData,
+    IsDelBookCallbackData,
+    IsBookmarkCallbackData,
+    IsDelBookmarkCallbackData,
+)
+from database.database import bot_database as db
+from keyboards.bookmarks_kb import (
+    create_bookmarks_keyboard,
+    create_edit_keyboard,
+)
 from keyboards.pagination_kb import create_pagination_keyboard
 from lexicon.lexicon import LEXICON
 from services.file_handling import book
@@ -38,11 +46,11 @@ async def process_beginning_command(message: Message):
     users_db[message.from_user.id]['page'] = 1
     text = book[users_db[message.from_user.id]['page']]
     await message.answer(
-            text=text,
-            reply_markup=create_pagination_keyboard(
-                    'backward',
-                    f'{users_db[message.from_user.id]["page"]}/{len(book)}',
-                    'forward'))
+        text=text,
+        reply_markup=create_pagination_keyboard(
+            'backward',
+            f'{users_db[message.from_user.id]["page"]}/{len(book)}',
+            'forward'))
 
 
 # Этот хэндлер будет срабатывать на команду "/continue"
@@ -52,11 +60,11 @@ async def process_beginning_command(message: Message):
 async def process_continue_command(message: Message):
     text = book[users_db[message.from_user.id]['page']]
     await message.answer(
-                text=text,
-                reply_markup=create_pagination_keyboard(
-                    'backward',
-                    f'{users_db[message.from_user.id]["page"]}/{len(book)}',
-                    'forward'))
+        text=text,
+        reply_markup=create_pagination_keyboard(
+            'backward',
+            f'{users_db[message.from_user.id]["page"]}/{len(book)}',
+            'forward'))
 
 
 # Этот хэндлер будет срабатывать на команду "/bookmarks"
@@ -83,9 +91,9 @@ async def process_forward_press(callback: CallbackQuery):
         await callback.message.edit_text(
             text=text,
             reply_markup=create_pagination_keyboard(
-                    'backward',
-                    f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
-                    'forward'))
+                'backward',
+                f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
+                'forward'))
     await callback.answer()
 
 
@@ -97,11 +105,11 @@ async def process_backward_press(callback: CallbackQuery):
         users_db[callback.from_user.id]['page'] -= 1
         text = book[users_db[callback.from_user.id]['page']]
         await callback.message.edit_text(
-                text=text,
-                reply_markup=create_pagination_keyboard(
-                    'backward',
-                    f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
-                    'forward'))
+            text=text,
+            reply_markup=create_pagination_keyboard(
+                'backward',
+                f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
+                'forward'))
     await callback.answer()
 
 
@@ -121,11 +129,11 @@ async def process_bookmark_press(callback: CallbackQuery):
     text = book[int(callback.data)]
     users_db[callback.from_user.id]['page'] = int(callback.data)
     await callback.message.edit_text(
-                text=text,
-                reply_markup=create_pagination_keyboard(
-                    'backward',
-                    f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
-                    'forward'))
+        text=text,
+        reply_markup=create_pagination_keyboard(
+            'backward',
+            f'{users_db[callback.from_user.id]["page"]}/{len(book)}',
+            'forward'))
     await callback.answer()
 
 
@@ -134,9 +142,9 @@ async def process_bookmark_press(callback: CallbackQuery):
 @router.callback_query(F.data == 'edit_bookmarks')
 async def process_edit_press(callback: CallbackQuery):
     await callback.message.edit_text(
-                text=LEXICON[callback.data],
-                reply_markup=create_edit_keyboard(
-                                *users_db[callback.from_user.id]["bookmarks"]))
+        text=LEXICON[callback.data],
+        reply_markup=create_edit_keyboard(
+            *users_db[callback.from_user.id]["bookmarks"]))
     await callback.answer()
 
 
@@ -153,12 +161,12 @@ async def process_cancel_press(callback: CallbackQuery):
 @router.callback_query(IsDelBookmarkCallbackData())
 async def process_del_bookmark_press(callback: CallbackQuery):
     users_db[callback.from_user.id]['bookmarks'].remove(
-                                                    int(callback.data[:-3]))
+        int(callback.data[:-3]))
     if users_db[callback.from_user.id]['bookmarks']:
         await callback.message.edit_text(
-                    text=LEXICON['/bookmarks'],
-                    reply_markup=create_edit_keyboard(
-                            *users_db[callback.from_user.id]["bookmarks"]))
+            text=LEXICON['/bookmarks'],
+            reply_markup=create_edit_keyboard(
+                *users_db[callback.from_user.id]["bookmarks"]))
     else:
         await callback.message.edit_text(text=LEXICON['no_bookmarks'])
     await callback.answer()
