@@ -3,6 +3,7 @@ from aiogram.filters import Command, CommandStart, Text
 from aiogram.types import CallbackQuery, Message
 
 from callback_factories.edit_items import EditItemsCallbackFactory
+from database.database import bot_database as db
 from filters.filters import (
     IsAddToBookMarksCallbackData,
     IsBookCallbackData,
@@ -10,61 +11,95 @@ from filters.filters import (
     IsBookmarkCallbackData,
     IsDelBookmarkCallbackData,
 )
-from database.database import bot_database as db
 from keyboards.bookmarks_kb import (
     create_bookmarks_keyboard,
     create_edit_keyboard,
 )
+from keyboards.book_kb import (
+    create_books_keyboard,
+    create_edit_books_keyboard,
+)
 from keyboards.pagination_kb import create_pagination_keyboard
 from lexicon.lexicon import LEXICON
-from services.file_handling import book
+from services.file_handling import (
+    get_file_text_from_server,
+    prepare_book,
+    pretty_name,
+)
+from errors.error import BadBookError
 
 router: Router = Router()
 
 
-# Этот хэндлер будет срабатывать на команду "/start" -
-# добавлять пользователя в базу данных, если его там еще не было
-# и отправлять ему приветственное сообщение
+# This handler will be triggered by the command "/start" -
+# add the user to the database if he was not there yet
+# and send him a welcome message
 @router.message(CommandStart())
-async def process_start_command(message: Message):
+async def process_start_command(message: Message) -> None:
+    db.user_interface.create_if_not_exists(
+        user_id=message.from_user.id,
+        current_page=1,
+        current_book=1,
+        books=[1],
+        book_marks={}
+    )
     await message.answer(LEXICON[message.text])
-    if message.from_user.id not in users_db:
-        users_db[message.from_user.id] = deepcopy(user_dict_template)
 
 
-# Этот хэндлер будет срабатывать на команду "/help"
-# и отправлять пользователю сообщение со списком доступных команд в боте
+# This handler will trigger the "/help" command
+# and send the user a message with a list of available commands in the bot
 @router.message(Command(commands='help'))
-async def process_help_command(message: Message):
+async def process_help_command(message: Message) -> None:
     await message.answer(LEXICON[message.text])
 
 
-# Этот хэндлер будет срабатывать на команду "/beginning"
-# и отправлять пользователю первую страницу книги с кнопками пагинации
-@router.message(Command(commands='beginning'))
-async def process_beginning_command(message: Message):
-    users_db[message.from_user.id]['page'] = 1
-    text = book[users_db[message.from_user.id]['page']]
-    await message.answer(
-        text=text,
-        reply_markup=create_pagination_keyboard(
-            'backward',
-            f'{users_db[message.from_user.id]["page"]}/{len(book)}',
-            'forward'))
+# This handler will trigger the "/books" command
+# and send the user a message with a list of available books in the bot
+@router.message(Command(commands='books'))
+async def process_books_command(message: Message) -> None:
+    user_books: list = db.user_interface.get_books(message.from_user.id)
+    if user_books:
+        await message.answer(
+            text=LEXICON[message.text],
+            reply_markup=create_pagination_keyboard(*user_books)
+        )
+    else:
+        await message.answer(LEXICON['no_books'])
+
+
+@router.message(Command(commands='bookmarks'))
+async def process_bookmarks_command(message: Message) -> None:
+    user_book: str | None = db.user_interface.get_current_book(message.from_user.id)
+    book_marks: dict = db.user_interface.get_book_marks(message.from_user.id)
+    if book_marks:
+        await message.answer(
+            text=LEXICON[message.text],
+            reply_markup=create_pagination_keyboard(
+                user_book,
+                *book_marks[user_book]
+            )
+        )
+    else:
+        await message.answer(text=LEXICON['no_bookmarks'])
 
 
 # Этот хэндлер будет срабатывать на команду "/continue"
 # и отправлять пользователю страницу книги, на которой пользователь
 # остановился в процессе взаимодействия с ботом
 @router.message(Command(commands='continue'))
-async def process_continue_command(message: Message):
-    text = book[users_db[message.from_user.id]['page']]
+async def process_continue_command(message: Message) -> None:
+    user_book: str | None = db.user_interface.get_current_book(message.from_user.id)
+    user_page: int = db.user_interface.get_current_page(message.from_user.id)
+    text: str = db.book_interface.get_page_content(user_book, user_page)
+    book_length: int = db.book_interface.get_length(user_book)
     await message.answer(
         text=text,
         reply_markup=create_pagination_keyboard(
             'backward',
-            f'{users_db[message.from_user.id]["page"]}/{len(book)}',
-            'forward'))
+            f'{user_page}/{book_length}',
+            'forward',
+        )
+    )
 
 
 # Этот хэндлер будет срабатывать на команду "/bookmarks"
