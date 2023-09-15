@@ -6,8 +6,8 @@ from lexicon.lexicon import LEXICON
 router: Router = Router()
 
 
-# Этот хэндлер будет реагировать на любые сообщения пользователя,
-# не предусмотренные логикой работы бота
+# This handler will respond to any user messages,
+# not provided by the logic of the bot
 @router.message()
 async def send_echo(message: Message):
     await message.answer(LEXICON['miss_message'])
