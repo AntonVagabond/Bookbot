@@ -6,12 +6,12 @@ from database.database import bot_database as db
 from lexicon.lexicon import LEXICON
 
 
-# Функция генерации списка заклодок
+# Bookmark list generation function
 def create_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
-    # Создаем объект клавиатуры
+    # Creating a keyboard object
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
-    # Наполняем клавиатуру кнопками-закладками в порядке возрастания
+    # Fill the keyboard with bookmark buttons in ascending order
     for button in sorted(set(args)):
         kb_builder.row(
             InlineKeyboardButton(
@@ -20,7 +20,7 @@ def create_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarku
             )
         )
 
-    # Добавляем в клавиатуру в конце две кнопки "Редактировать" и "Отменить"
+    # Add two "Edit" and "Cancel" buttons to the keyboard at the end
     kb_builder.row(
         InlineKeyboardButton(
             text=LEXICON['edit_button'],
@@ -35,12 +35,12 @@ def create_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarku
     return kb_builder.as_markup()
 
 
-# Функция для генерации списка закладок к удалению
+# Function for generating a list of bookmarks to delete
 def create_edit_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
-    # Создаем объект клавиатуры
+    # Creating a keyboard object
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
-    # Наполняем клавиатуру кнопками-закладками в порядке возрастания
+    # Fill the keyboard with bookmark buttons in ascending order
     for button in sorted(args):
         kb_builder.row(
             InlineKeyboardButton(
@@ -52,7 +52,7 @@ def create_edit_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
             )
         )
 
-    # Добавляем в конец клавиатуры кнопку "Отменить"
+    # Add the "Cancel" button to the end of the keyboard
     kb_builder.row(
         InlineKeyboardButton(
             text=LEXICON['cancel'],
