@@ -33,6 +33,7 @@ def create_books_keyboard(*args: str) -> InlineKeyboardMarkup:
     )
     return kb_builder.as_markup()
 
+
 # Function for generating a list of books to delete
 def create_edit_books_keyboard(*args: str) -> InlineKeyboardMarkup:
     # Creating a keyboard object
