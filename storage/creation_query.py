@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.menu_commands
 
 CREATE TABLE IF NOT EXISTS public.users
 (
-    user_id integer PRIMARY KEY,
+    user_id BIGINT PRIMARY KEY,
     current_book integer,
     current_page integer,
     books integer[],
