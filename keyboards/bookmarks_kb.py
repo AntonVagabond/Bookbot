@@ -36,7 +36,7 @@ def create_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarku
 
 
 # Function for generating a list of bookmarks to delete
-def create_edit_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
+def create_edit_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
     # Creating a keyboard object
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
