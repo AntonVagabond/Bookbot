@@ -13,7 +13,7 @@ from filters.filters import (
 )
 from keyboards.bookmarks_kb import (
     create_bookmarks_keyboard,
-    create_edit_keyboard,
+    create_edit_bookmarks_keyboard,
 )
 from keyboards.book_kb import (
     create_books_keyboard,
@@ -77,7 +77,7 @@ async def process_bookmarks_command(message: Message) -> None:
     if book_marks:
         await message.answer(
             text=LEXICON[message.text],
-            reply_markup=create_pagination_keyboard(
+            reply_markup=create_bookmarks_keyboard(
                 user_book,
                 *book_marks[user_book]
             )
@@ -248,7 +248,7 @@ async def process_edit_bookmarks_press(callback: CallbackQuery) -> None:
     book_mark: dict = db.user_interface.get_book_marks(callback.from_user.id)
     await callback.message.edit_text(
         text=LEXICON[callback.data],
-        reply_markup=create_pagination_keyboard(user_book, *book_mark[user_book])
+        reply_markup=create_edit_bookmarks_keyboard(user_book, *book_mark[user_book])
     )
     await callback.answer()
 
