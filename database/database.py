@@ -219,7 +219,7 @@ class BookInterface(BaseQueryMixin):
         FROM books
         WHERE name = %s;
         """
-        values: tuple = (book_name,)
+        values: tuple = (str(page), book_name)
         result: tuple = self.get_row_by_query(query, values)
         page_text: str = result[0]
         return page_text
