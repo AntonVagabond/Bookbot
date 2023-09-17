@@ -190,7 +190,7 @@ async def process_del_book_press(callback: CallbackQuery, user_book: str) -> Non
 async def process_forward_press(callback: CallbackQuery) -> None:
     user_page: int = db.user_interface.get_current_page(callback.from_user.id)
     user_book: str | None = db.user_interface.get_current_book(callback.from_user.id)
-    book_length: int = db.user_interface.get_length(user_book)
+    book_length: int = db.book_interface.get_length(user_book)
 
     next_page: int = user_page + 1
     if user_page == book_length:
