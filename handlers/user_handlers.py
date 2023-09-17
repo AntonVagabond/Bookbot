@@ -245,10 +245,10 @@ async def process_page_press(callback: CallbackQuery) -> None:
 @router.callback_query(EditItemsCallbackFactory.filter(F.item_type == 'bookmarks'))
 async def process_edit_bookmarks_press(callback: CallbackQuery) -> None:
     user_book: str | None = db.user_interface.get_current_book(callback.from_user.id)
-    book_mark: dict = db.user_interface.get_book_marks(callback.from_user.id)
+    book_marks: dict = db.user_interface.get_book_marks(callback.from_user.id)
     await callback.message.edit_text(
         text=LEXICON[callback.data],
-        reply_markup=create_edit_bookmarks_keyboard(user_book, *book_mark[user_book])
+        reply_markup=create_edit_bookmarks_keyboard(user_book, *book_marks[user_book])
     )
     await callback.answer()
 
