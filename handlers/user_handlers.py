@@ -61,7 +61,7 @@ async def process_books_command(message: Message) -> None:
     if user_books:
         await message.answer(
             text=LEXICON[message.text],
-            reply_markup=create_pagination_keyboard(*user_books)
+            reply_markup=create_books_keyboard(*user_books)
         )
     else:
         await message.answer(LEXICON['no_books'])
@@ -131,7 +131,7 @@ async def process_load_book(message: Message) -> None:
 
 
 @router.callback_query(IsBookCallbackData())
-async def process_book_press(callback: CallbackQuery, user_book) -> None:
+async def process_book_press(callback: CallbackQuery, user_book: str) -> None:
     print('Is_bookCallback')
     db.user_interface.set_current_book(callback.from_user.id, user_book)
     db.user_interface.set_current_page(callback.from_user.id, 1)
@@ -168,7 +168,7 @@ async def process_edit_books_press(callback: CallbackQuery) -> None:
     users_books: list = db.user_interface.get_books(callback.from_user.id)
     await callback.message.edit_text(
         text=LEXICON['/books'],
-        reply_markup=create_pagination_keyboard(*users_books)
+        reply_markup=create_books_keyboard(*users_books)
     )
 
 
@@ -176,7 +176,7 @@ async def process_edit_books_press(callback: CallbackQuery) -> None:
 async def process_del_book_press(callback: CallbackQuery, user_book: str) -> None:
     db.user_interface.remove_book(callback.from_user.id, user_book)
     user_books: list = db.user_interface.get_books(callback.from_user.id)
-    reply_markup: InlineKeyboardMarkup = create_pagination_keyboard(*user_books)
+    reply_markup: InlineKeyboardMarkup = create_books_keyboard(*user_books)
     if len(user_books) > 1:
         text: str = LEXICON['edit_books']
         answer: str = LEXICON['delete_book']
@@ -266,9 +266,12 @@ async def process_bookmark_press(callback: CallbackQuery, page: int) -> None:
     text: str = db.book_interface.get_page_content(user_book, page)
     book_length: int = db.book_interface.get_length(user_book)
     await callback.message.edit_text(
-        'backward',
-        f'{page}/{book_length}',
-        'forward',
+        text=text,
+        reply_markup=create_pagination_keyboard(
+            'backward',
+            f'{page}/{book_length}',
+            'forward',
+        )
     )
     await callback.answer()
 
@@ -291,7 +294,10 @@ async def process_del_bookmark_press(callback: CallbackQuery, page: int) -> None
     if book_marks:
         await callback.message.edit_text(
             text=LEXICON['edit_bookmarks'],
-            reply_markup=create_pagination_keyboard(user_book, *book_marks[user_book])
+            reply_markup=create_edit_bookmarks_keyboard(
+                user_book,
+                *book_marks[user_book],
+            )
         )
     else:
         await callback.message.edit_text(text=LEXICON['no_bookmarks'])
