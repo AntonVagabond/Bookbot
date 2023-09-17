@@ -95,6 +95,7 @@ async def process_continue_command(message: Message) -> None:
     user_page: int = db.user_interface.get_current_page(message.from_user.id)
     text: str = db.book_interface.get_page_content(user_book, user_page)
     book_length: int = db.book_interface.get_length(user_book)
+    print('continue')
     await message.answer(
         text=text,
         reply_markup=create_pagination_keyboard(
@@ -109,13 +110,14 @@ async def process_continue_command(message: Message) -> None:
 # to save the book
 @router.message(F.document)
 async def process_load_book(message: Message) -> None:
+    print('f.document')
     if message.document.mime_type == 'text/plain':
         book_name: str = message.caption or pretty_name(message.document.file_name)
         beautiful_name: str = f'📖 {book_name}'
         if db.user_interface.book_exists(message.from_user.id, book_name):
             answer: str = LEXICON['book_exists']
         else:
-            text = get_file_text_from_server(message.document.file_name)
+            text = get_file_text_from_server(message.document.file_id)
             try:
                 content: str = prepare_book(text)
                 db.user_interface.save_book(message.from_user.id, book_name, content)
@@ -130,6 +132,7 @@ async def process_load_book(message: Message) -> None:
 
 @router.callback_query(IsBookCallbackData())
 async def process_book_press(callback: CallbackQuery, user_book) -> None:
+    print('Is_bookCallback')
     db.user_interface.set_current_book(callback.from_user.id, user_book)
     db.user_interface.set_current_page(callback.from_user.id, 1)
     text: str = db.book_interface.get_page_content(user_book, 1)
@@ -147,6 +150,7 @@ async def process_book_press(callback: CallbackQuery, user_book) -> None:
 @router.callback_query(EditItemsCallbackFactory.filter(F.item_type == 'books'))
 async def process_edit_books_press(callback: CallbackQuery) -> None:
     user_books: list = db.user_interface.get_books(callback.from_user.id)
+    print('books_filter')
     if len(user_books) > 1:
         answer: str = LEXICON['edit']
         await callback.message.edit_text(
@@ -239,6 +243,7 @@ async def process_page_press(callback: CallbackQuery) -> None:
     user_page: int = db.user_interface.get_current_page(callback.from_user.id)
     user_book: str | None = db.user_interface.get_current_book(callback.from_user.id)
     db.user_interface.add_book_mark(callback.from_user.id, user_book, user_page)
+    print('add bookmark')
     await callback.answer(f'Страница {user_page} добавлена в закладки!')
 
 
@@ -246,6 +251,8 @@ async def process_page_press(callback: CallbackQuery) -> None:
 async def process_edit_bookmarks_press(callback: CallbackQuery) -> None:
     user_book: str | None = db.user_interface.get_current_book(callback.from_user.id)
     book_marks: dict = db.user_interface.get_book_marks(callback.from_user.id)
+    print(callback.data)
+    print(LEXICON)
     await callback.message.edit_text(
         text=LEXICON[callback.data],
         reply_markup=create_edit_bookmarks_keyboard(user_book, *book_marks[user_book])
