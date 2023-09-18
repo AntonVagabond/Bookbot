@@ -39,15 +39,14 @@ def create_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarku
 def create_edit_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboardMarkup:
     # Creating a keyboard object
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
-
     # Fill the keyboard with bookmark buttons in ascending order
     for button in sorted(args):
         kb_builder.row(
             InlineKeyboardButton(
                 text=f"""{LEXICON["del"]} {button} - {db.book_interface.get_page_content(
                     book_name,
-                    button[:100]
-                )}""",
+                    button
+                )[:100]}""",
                 callback_data=f'{button}del'
             )
         )
