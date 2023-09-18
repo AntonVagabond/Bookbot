@@ -45,9 +45,9 @@ def create_edit_bookmarks_keyboard(book_name: str, *args: int) -> InlineKeyboard
             InlineKeyboardButton(
                 text=f"""{LEXICON["del"]} {button} - {db.book_interface.get_page_content(
                     book_name,
-                    button
+                    button,
                 )[:100]}""",
-                callback_data=f'{button}del'
+                callback_data=f'{button}#$%delbookmark#$%'
             )
         )
 
