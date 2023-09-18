@@ -95,7 +95,6 @@ async def process_continue_command(message: Message) -> None:
     user_page: int = db.user_interface.get_current_page(message.from_user.id)
     text: str = db.book_interface.get_page_content(user_book, user_page)
     book_length: int = db.book_interface.get_length(user_book)
-    print('continue')
     await message.answer(
         text=text,
         reply_markup=create_pagination_keyboard(
@@ -149,7 +148,6 @@ async def process_book_press(callback: CallbackQuery, user_book: str) -> None:
 @router.callback_query(EditItemsCallbackFactory.filter(F.item_type == 'books'))
 async def process_edit_books_press(callback: CallbackQuery) -> None:
     user_books: list = db.user_interface.get_books(callback.from_user.id)
-    print('books_filter')
     if len(user_books) > 1:
         answer: str = LEXICON['edit']
         await callback.message.edit_text(
@@ -171,7 +169,7 @@ async def process_edit_books_press(callback: CallbackQuery) -> None:
     )
 
 
-@router.callback_query(IsDelBookmarkCallbackData())
+@router.callback_query(IsDelBookCallbackData())
 async def process_del_book_press(callback: CallbackQuery, user_book: str) -> None:
     db.user_interface.remove_book(callback.from_user.id, user_book)
     user_books: list = db.user_interface.get_books(callback.from_user.id)
