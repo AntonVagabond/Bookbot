@@ -130,7 +130,6 @@ async def process_load_book(message: Message) -> None:
 
 @router.callback_query(IsBookCallbackData())
 async def process_book_press(callback: CallbackQuery, user_book: str) -> None:
-    print('Is_bookCallback')
     db.user_interface.set_current_book(callback.from_user.id, user_book)
     db.user_interface.set_current_page(callback.from_user.id, 1)
     text: str = db.book_interface.get_page_content(user_book, 1)
