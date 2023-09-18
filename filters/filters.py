@@ -22,7 +22,7 @@ class IsDelBookCallbackData(BaseFilter):
     async def __call__(self, callback: CallbackQuery) -> dict[str, str] | bool:
         if isinstance(callback.data, str) and '#$%delbook#$%' in callback.data:
             book_name: str = callback.data[:-13]
-            return {'user_name': book_name}
+            return {'user_book': book_name}
         return False
 
 
