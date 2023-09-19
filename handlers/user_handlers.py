@@ -112,7 +112,7 @@ async def process_load_book(message: Message) -> None:
     if message.document.mime_type == 'text/plain':
         book_name: str = message.caption or pretty_name(message.document.file_name)
         beautiful_name: str = f'📖 {book_name}'
-        if db.user_interface.book_exists(message.from_user.id, book_name):
+        if db.user_interface.book_exists(message.from_user.id, beautiful_name):
             answer: str = LEXICON['book_exists']
         else:
             text = get_file_text_from_server(message.document.file_id)
