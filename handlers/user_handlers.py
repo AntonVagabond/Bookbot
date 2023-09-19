@@ -286,7 +286,7 @@ async def process_del_bookmark_press(callback: CallbackQuery, page: int) -> None
     book_marks: dict = db.user_interface.get_book_marks(callback.from_user.id)
     if book_marks:
         await callback.message.edit_text(
-            text=LEXICON['edit_bookmarks'],
+            text=LEXICON['edit_items:bookmarks'],
             reply_markup=create_edit_bookmarks_keyboard(
                 user_book,
                 *book_marks[user_book],
