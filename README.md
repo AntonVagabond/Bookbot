@@ -27,7 +27,7 @@
 1. Клонирование репозитория:
 
 ```bash
-git clone https://github.com/MaximGudkov/BookBot.git
+git clone https://github.com/AntonVagabond/Bookbot.git
 ```
 
 2. Создание виртуального окружения и установка зависимостей:
