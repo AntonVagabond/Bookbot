@@ -174,8 +174,8 @@ async def process_del_book_press(callback: CallbackQuery, user_book: str) -> Non
     user_books: list = db.user_interface.get_books(callback.from_user.id)
     reply_markup: InlineKeyboardMarkup = create_books_keyboard(*user_books)
     if len(user_books) > 1:
-        text: str = LEXICON['edit_books']
-        answer: str = LEXICON['delete_book']
+        text: str = LEXICON['edit_items:books']
+        answer: str = LEXICON['deleted_book']
     else:
         text: str = LEXICON['/books']
         answer: str = LEXICON['no_books_to_delete']
