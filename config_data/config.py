@@ -1,24 +1,34 @@
-from dataclasses import dataclass
+import os
 
-from environs import Env
+from dotenv import load_dotenv
+from errors.error import ImproperlyConfigured
 
-
-@dataclass
-class TgBot:
-    token: str  # Токен для доступа к телеграм-боту
-    admin_ids: list[int]  # Список id администраторов бота
+# todo: Parse a `.env` file adn load the variables inside into environment variables
+load_dotenv()
 
 
-@dataclass
-class Config:
-    tg_bot: TgBot
+def get_env_variable(var_name: str) -> str:
+    """Get an environment variable or raise an exception.
+
+    Args:
+        var_name: a name of a environment variable.
+
+    Returns:
+        A value of the environment variable.
+
+    Raises:
+        ImproperlyConfigured: if the environment variable is not set.
+    """
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        raise ImproperlyConfigured(var_name)
 
 
-# Создаем функцию, которая будет читать файл .env и возвращать
-# экземпляр класса Config с заполненными полями token и admin_ids
-def load_config(path: str | None = None) -> Config:
-    env = Env()
-    env.read_env(path)
-    return Config(tg_bot=TgBot(
-        token=env('BOT_TOKEN'),
-        admin_ids=list(map(int, env.list('ADMIN_IDS')))))
+BOT_TOKEN: str = get_env_variable('BOT_TOKEN')
+
+DB_HOST: str = get_env_variable('DB_HOST')
+DB_PORT: str = get_env_variable('DB_PORT')
+DB_NAME: str = get_env_variable('DB_NAME')
+DB_USER: str = get_env_variable('DB_USER')
+DB_PASSWORD: str = get_env_variable('DB_PASSWORD')
